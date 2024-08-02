@@ -56,6 +56,15 @@ const PlayVideo: React.FC = () => {
       setIsNewVideoPlaying(false);
     }
   };
+  const [isVideoStarted, setIsVideoStarted] = useState<boolean>(false);
+  const handleStartVideo = () => {
+    setIsVideoStarted(true);
+    if (videoRef.current) {
+      videoRef.current.play().catch((error) => {
+        console.error("Error playing video:", error);
+      });
+    }
+  };
 
   return (
     <div className="grid grid-cols-3 h-[100dvh]">
@@ -68,18 +77,21 @@ const PlayVideo: React.FC = () => {
         >
           <div className="flex h-full flex-col items-center justify-center">
             <div className="relative">
-              <video
-                ref={videoRef}
-                autoPlay
-                controls
-                onEnded={handleVideoEnded}
-              >
+              <video ref={videoRef} autoPlay onEnded={handleVideoEnded}>
                 Your browser does not support the video tag.
               </video>
             </div>
           </div>
         </div>
       </div>
+      {!isVideoStarted && (
+        <button
+          onClick={handleStartVideo}
+          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
+        >
+          Start Video
+        </button>
+      )}
     </div>
   );
 };
