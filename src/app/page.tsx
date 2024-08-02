@@ -84,14 +84,7 @@ const PlayVideo: React.FC = () => {
           </div>
         </div>
       </div>
-      {!isVideoStarted && (
-        <button
-          onClick={handleStartVideo}
-          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          Start Video
-        </button>
-      )}
+      {!isVideoStarted && <button onClick={handleStartVideo}>play</button>}
     </div>
   );
 };
