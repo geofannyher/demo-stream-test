@@ -3,26 +3,30 @@
 import React, { useEffect, useRef, useState } from "react";
 
 const PlayVideo: React.FC = () => {
-  const videoUrl =
+  const defaultVideoUrl =
     "https://res.cloudinary.com/dp8ita8x5/video/upload/v1720685155/videoStream/gemuk/wpoydfqeewnhdvtr9mog.mp4";
-
-  const [audioUrl, setAudioUrl] = useState<string>("");
+  const [videoUrl, setVideoUrl] = useState<string>(defaultVideoUrl);
+  const [isNewVideoPlaying, setIsNewVideoPlaying] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   const connectToStream = () => {
     const eventSource = new EventSource("/api/subscribeMessage");
     eventSource.addEventListener("message", (event) => {
       console.log("Received message event:", event);
-      const newAudioUrl = event.data;
-      if (newAudioUrl) {
-        setAudioUrl(newAudioUrl);
+      const newVideoUrl = event.data;
+      if (newVideoUrl) {
+        setVideoUrl(newVideoUrl);
+        setIsNewVideoPlaying(true);
         if (videoRef.current) {
-          videoRef.current.currentTime = 61; // 1 menit 1 detik
-          videoRef.current.loop = true;
+          videoRef.current.currentTime = 0; // Reset video to start
+          videoRef.current.loop = false; // Do not loop new video
+          videoRef.current.load();
+          videoRef.current.play().catch((error) => {
+            console.error("Error playing video:", error);
+          });
         }
       } else {
-        console.error("Received invalid audio URL");
+        console.error("Received invalid video URL");
       }
     });
 
@@ -44,39 +48,26 @@ const PlayVideo: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (audioRef.current && audioUrl) {
-      audioRef.current.src = audioUrl;
-      audioRef.current.load();
-      audioRef.current.play().catch((error) => {
-        console.error("Error playing audio:", error);
+    if (videoRef.current) {
+      videoRef.current.src = videoUrl;
+      videoRef.current.load();
+      videoRef.current.play().catch((error) => {
+        console.error("Error playing video:", error);
       });
     }
-  }, [audioUrl]);
+  }, [videoUrl]);
 
-  const handleAudioEnded = () => {
-    console.log("Audio ended");
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.loop = true;
-    }
-  };
-
-  const handleAudioCanPlayThrough = () => {
-    console.log("Audio can play through");
-    if (videoRef.current) {
-      videoRef.current.currentTime = 61; // 1 menit 1 detik
-      videoRef.current.loop = true;
-    }
-  };
-
-  const handleVideoTimeUpdate = () => {
-    if (videoRef.current) {
-      if (audioUrl && videoRef.current.currentTime >= 103) {
-        // 1 menit 43 detik
-        videoRef.current.currentTime = 61; // 1 menit 1 detik
-      } else if (!audioUrl && videoRef.current.currentTime >= 60) {
-        // 1 menit
-        videoRef.current.currentTime = 0;
+  const handleVideoEnded = () => {
+    if (isNewVideoPlaying) {
+      setVideoUrl(defaultVideoUrl);
+      setIsNewVideoPlaying(false);
+      if (videoRef.current) {
+        videoRef.current.loop = true;
+        videoRef.current.currentTime = 0; // Reset to start of default video
+        videoRef.current.load();
+        videoRef.current.play().catch((error) => {
+          console.error("Error playing video:", error);
+        });
       }
     }
   };
@@ -96,8 +87,8 @@ const PlayVideo: React.FC = () => {
                 ref={videoRef}
                 src={videoUrl}
                 autoPlay
-                muted
-                onTimeUpdate={handleVideoTimeUpdate}
+                controls
+                onEnded={handleVideoEnded}
               >
                 Your browser does not support the video tag.
               </video>
@@ -105,19 +96,6 @@ const PlayVideo: React.FC = () => {
           </div>
         </div>
       </div>
-      {audioUrl && (
-        <audio
-          ref={audioRef}
-          onEnded={handleAudioEnded}
-          onCanPlayThrough={handleAudioCanPlayThrough}
-          autoPlay
-          controls
-          // style={{ display: "none" }}
-        >
-          <source src={audioUrl} type="audio/mpeg" />
-          Your browser does not support the audio element.
-        </audio>
-      )}
     </div>
   );
 };
