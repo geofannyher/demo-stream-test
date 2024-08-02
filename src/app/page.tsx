@@ -50,15 +50,6 @@ const PlayVideo: React.FC = () => {
     }
   }, [videoUrl]);
 
-  useEffect(() => {
-    if (videoRef.current && videoUrl === defaultVideoUrl) {
-      videoRef.current.loop = true;
-      videoRef.current.play().catch((error) => {
-        console.error("Error playing video:", error);
-      });
-    }
-  }, []);
-
   const handleVideoEnded = () => {
     if (isNewVideoPlaying) {
       setVideoUrl(defaultVideoUrl);

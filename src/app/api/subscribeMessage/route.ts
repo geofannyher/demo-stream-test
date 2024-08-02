@@ -11,7 +11,7 @@ async function setupRabbitMQ() {
   }
   connection = await amqp.connect(process.env.NEXT_RABBITMQ_URL);
   channel = await connection.createChannel();
-  await channel.assertQueue("audiotest1", { durable: false });
+  await channel.assertQueue("videotest1", { durable: false });
 }
 
 export const runtime = "nodejs";
@@ -30,7 +30,7 @@ export async function GET(req: Request, res: NextApiResponse) {
         // Subscribe to Redis updates for the key: "posts"
         // In case of any error, just log it
         channel.consume(
-          "audiotest1",
+          "videotest1",
           (msg: Message | null) => {
             if (msg !== null) {
               console.log("Received message:", msg.content.toString());
