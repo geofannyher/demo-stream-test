@@ -68,7 +68,12 @@ const PlayVideo: React.FC = () => {
         >
           <div className="flex h-full flex-col items-center justify-center">
             <div className="relative">
-              <video ref={videoRef} autoPlay onEnded={handleVideoEnded}>
+              <video
+                ref={videoRef}
+                autoPlay
+                controls
+                onEnded={handleVideoEnded}
+              >
                 Your browser does not support the video tag.
               </video>
             </div>
